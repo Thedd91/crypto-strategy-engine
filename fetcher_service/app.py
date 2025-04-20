@@ -75,10 +75,11 @@ uploaded_files = st.file_uploader(
 if uploaded_files:
     if st.button("🚀 Carica nel DB"):
         errors, results = [], []
-        with st.spinner("Import in corso…"):
+        with st.spinner("⏳ Importazione in corso…"):
             for up in uploaded_files:
                 name = up.name.lower()
                 symbol = name.split(".")[0]
+                st.write(f"📄 Processo file: `{name}` → simbolo `{symbol}`")
                 try:
                     df = pd.read_csv(up, parse_dates=["snapped_at"])
                 except Exception as e:
@@ -87,13 +88,13 @@ if uploaded_files:
 
                 df = df.rename(columns={
                     "snapped_at": "timestamp",
-                    "price":      "close",
+                    "price": "close",
                     "total_volume": "volume"
                 })
                 df["open"] = df["close"]
                 df["high"] = df["close"]
                 df["low"]  = df["close"]
-                df = df.set_index("timestamp")[["open","high","low","close","volume"]]
+                df = df.set_index("timestamp")[["open", "high", "low", "close", "volume"]]
 
                 try:
                     save_ohlcv(df, symbol)
