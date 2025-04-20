@@ -40,9 +40,9 @@ if st.button("Fetch & Save"):
 # - Mostra la data dell’ultima esecuzione (dal file backfill_log.csv)
 # - Protegge da click accidentali con una checkbox di conferma
 # - Esegue run_backfill() una tantum per scaricare e salvare tutti i dati storici nel DB
-
+# 📦 Sezione Backfill storico (una tantum) con verifica post-run
 import streamlit as st
-from backfill import get_last_run_date, run_backfill
+from backfill import get_last_run_date, run_backfill, verify_backfill
 
 st.markdown("---")
 st.subheader("📦 Backfill storico (una tantum)")
@@ -58,11 +58,19 @@ if st.button("🔁 Esegui Backfill Storico"):
         else:
             with st.spinner("Esecuzione backfill in corso..."):
                 run_backfill()
-            st.success("✅ Backfill completato!")
+                missing = verify_backfill()
+            if not missing:
+                st.success("🎉 Backfill completato e verificato: tutti i simboli hanno dati.")
+            else:
+                st.error(f"❌ Backfill completato ma mancano dati per: {', '.join(missing)}")
     else:
         with st.spinner("Esecuzione backfill in corso..."):
             run_backfill()
-        st.success("✅ Backfill completato!")
+            missing = verify_backfill()
+        if not missing:
+            st.success("🎉 Backfill completato e verificato: tutti i simboli hanno dati.")
+        else:
+            st.error(f"❌ Backfill completato ma mancano dati per: {', '.join(missing)}")
 
 # 📊 Sezione di analisi della qualità dei dati storici per ciascun asset
 # - Calcola completezza, range di date, giorni mancanti e score qualitativo
