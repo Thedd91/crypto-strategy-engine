@@ -102,7 +102,27 @@ if st.button("🗑️ Svuota market_data"):
             from db import clear_market_data
             clear_market_data()
         st.success("✅ Tabella `market_data` svuotata con successo!")
+# 🗑️ Sezione opzionale: Svuota completamente il database
+st.markdown("---")
+st.header("🗑️ Pulizia completa del database")
 
+st.markdown(
+    """
+    **Attenzione**: questa operazione **elimina TUTTI** i dati storici
+    in `public.market_data`.  
+    ⁃ È irreversibile!  
+    ⁃ Usare solo se vuoi ripartire da zero.
+    """
+)
+if st.button("🗑️ Svuota market_data"):
+    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati"):
+        st.warning("☝️ Spunta la casella per confermare la cancellazione.")
+    else:
+        with st.spinner("Eliminazione dati in corso…"):
+            from db import clear_market_data
+            clear_market_data()
+        st.success("✅ Tabella `market_data` svuotata con successo!")
+        st.experimental_rerun()  # ← qui: ricarica tutta l’app per aggiornare il Data Quality Report
 
 # ─── Sezione 3: Data Quality Report ───────────────────────────────────────────
 st.header("📊 Data Quality Report")
