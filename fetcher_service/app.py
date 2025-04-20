@@ -8,11 +8,12 @@ from fetch import fetch_ohlcv
 from db import save_ohlcv, clear_market_data
 from data_quality import get_quality_report
 
-# Deve essere la prima chiamata Streamlit
+# ─── Configurazione pagina ────────────────────────────────────────────────────
 st.set_page_config(page_title="Crypto Strategy Engine", layout="wide")
 
-# Debug: URL del DB in uso (viene loggato nei log di Streamlit)
-print("🔍 URL DB in uso:", os.getenv("DATABASE_URL"))
+# Debug: mostra l'URL del database in uso
+db_url = os.getenv("DATABASE_URL")
+st.write("🔍 **URL DB in uso:**", db_url)
 
 st.title("🚀 Crypto Strategy Engine")
 st.markdown("Applicazione SaaS per importare e validare storici crypto")
@@ -34,7 +35,7 @@ if st.button("📊 Recupera e salva"):
 
 st.markdown("---")
 
-# ─── Sezione 2: Pulizia completa del database ────────────────────────────────
+# ─── Sezione 2: Pulizia completa del database ─────────────────────────────────
 st.header("🗑️ Pulizia completa del database")
 st.markdown(
     """
@@ -55,7 +56,7 @@ if st.button("🗑️ Svuota market_data"):
 
 st.markdown("---")
 
-# ─── Sezione 3: Bulk CSV Upload ───────────────────────────────────────────────
+# ─── Sezione 3: Bulk CSV Upload ────────────────────────────────────────────────
 st.header("📂 Bulk CSV Upload")
 st.markdown(
     """
@@ -101,8 +102,10 @@ if uploaded_files:
                     errors.append(f"{symbol}: errore salvataggio DB ({e})")
 
         st.success("📑 Import completato")
-        for r in results:  st.write("✅", r)
-        for err in errors: st.error(err)
+        for r in results:
+            st.write("✅", r)
+        for err in errors:
+            st.error(err)
 
 st.markdown("---")
 
