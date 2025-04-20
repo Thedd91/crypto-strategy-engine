@@ -5,12 +5,32 @@ import requests
 import pandas as pd
 from datetime import datetime
 
+def get_coin_id(name: str):
+    try:
+        coin_list_url = "https://api.coingecko.com/api/v3/coins/list"
+        response = requests.get(coin_list_url)
+        coins = response.json()
+        for coin in coins:
+            if coin['id'] == name.lower() or coin['symbol'] == name.lower():
+                return coin['id']
+        print("❌ Coin non trovata nella lista CoinGecko")
+        return None
+    except Exception as e:
+        print(f"❌ Errore nel recupero ID CoinGecko: {e}")
+        return None
+
 def fetch_ohlcv(symbol: str, days: int = 30):
     try:
-        url = f"https://api.coingecko.com/api/v3/coins/{symbol}/market_chart"
+        coin_id = get_coin_id(symbol)
+        if coin_id is None:
+            return None
+
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
         response = requests.get(url, params=params)
         data = response.json()
+
+        print("DEBUG - Risposta API:", data if len(str(data)) < 300 else str(data)[:300] + "...")
 
         if "prices" not in data:
             print("❌ Errore nella risposta API CoinGecko")
@@ -24,7 +44,7 @@ def fetch_ohlcv(symbol: str, days: int = 30):
         df["high"] = df["price"]
         df["low"] = df["price"]
         df["close"] = df["price"]
-        df["volume"] = 0.0  # CoinGecko non fornisce volume hourly qui
+        df["volume"] = 0.0
         return df[["open", "high", "low", "close", "volume"]]
 
     except Exception as e:
