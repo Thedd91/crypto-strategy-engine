@@ -63,3 +63,34 @@ if st.button("🔁 Esegui Backfill Storico"):
         with st.spinner("Esecuzione backfill in corso..."):
             run_backfill()
         st.success("✅ Backfill completato!")
+
+# 📊 Sezione di analisi della qualità dei dati storici per ciascun asset
+# - Calcola completezza, range di date, giorni mancanti e score qualitativo
+# - Mostra tabella interattiva filtrabile per score o completezza
+
+from data_quality import get_quality_report
+
+st.markdown("---")
+st.subheader("📊 Data Quality Report")
+
+try:
+    quality_df = get_quality_report()
+
+    st.markdown("Questa tabella mostra la qualità dei dati storici disponibili nel database per ciascun asset.")
+    st.dataframe(
+        quality_df.sort_values(by="completezza", ascending=False),
+        use_container_width=True
+    )
+
+    # Grafico opzionale: profondità storica per coin
+    st.markdown("### 📈 Anni di storico per coin")
+    chart_df = quality_df.copy()
+    chart_df["anni_storico"] = chart_df["periodo_totale"] / 365
+
+    st.bar_chart(
+        chart_df.set_index("symbol")[["anni_storico"]],
+        use_container_width=True
+    )
+
+except Exception as e:
+    st.error(f"❌ Errore nel calcolo della qualità dei dati: {e}")
