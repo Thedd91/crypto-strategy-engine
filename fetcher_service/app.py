@@ -2,12 +2,17 @@
 
 import streamlit as st
 import pandas as pd
-from fetch import fetch_ohlcv
-from db import save_ohlcv
-from data_quality import get_quality_report
 import os
-print("🔍 URL DB in uso:", os.getenv("DATABASE_URL"))
+
+from fetch import fetch_ohlcv
+from db import save_ohlcv, clear_market_data
+from data_quality import get_quality_report
+
+# Deve essere la prima chiamata Streamlit
 st.set_page_config(page_title="Crypto Strategy Engine", layout="wide")
+
+# Debug: URL del DB in uso (viene loggato nei log di Streamlit)
+print("🔍 URL DB in uso:", os.getenv("DATABASE_URL"))
 
 st.title("🚀 Crypto Strategy Engine")
 st.markdown("Applicazione SaaS per importare e validare storici crypto")
@@ -29,7 +34,28 @@ if st.button("📊 Recupera e salva"):
 
 st.markdown("---")
 
-# ─── Sezione 2: Bulk CSV Upload ────────────────────────────────────────────────
+# ─── Sezione 2: Pulizia completa del database ────────────────────────────────
+st.header("🗑️ Pulizia completa del database")
+st.markdown(
+    """
+    **Attenzione**: questa operazione **elimina TUTTI** i dati storici
+    in `public.market_data`.  
+    ⁃ È irreversibile!  
+    ⁃ Usare solo se vuoi ripartire da zero.
+    """
+)
+if st.button("🗑️ Svuota market_data"):
+    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati"):
+        st.warning("☝️ Spunta la casella per confermare la cancellazione.")
+    else:
+        with st.spinner("Eliminazione dati in corso…"):
+            clear_market_data()
+        st.success("✅ Tabella `market_data` svuotata con successo!")
+        st.experimental_rerun()
+
+st.markdown("---")
+
+# ─── Sezione 3: Bulk CSV Upload ───────────────────────────────────────────────
 st.header("📂 Bulk CSV Upload")
 st.markdown(
     """
@@ -58,7 +84,6 @@ if uploaded_files:
                     errors.append(f"{name}: errore lettura CSV ({e})")
                     continue
 
-                # Rinomina e prepara DataFrame
                 df = df.rename(columns={
                     "snapped_at": "timestamp",
                     "price":      "close",
@@ -81,58 +106,14 @@ if uploaded_files:
 
 st.markdown("---")
 
-# 🗑️ Sezione opzionale: Svuota completamente il database
-st.markdown("---")
-st.header("🗑️ Pulizia completa del database")
-
-st.markdown(
-    """
-    **Attenzione**: questa operazione **elimina TUTTI** i dati storici
-    in `public.market_data`.  
-    ⁃ È irreversibile!  
-    ⁃ Usare solo se vuoi ripartire da zero.
-    """
-)
-if st.button("🗑️ Svuota market_data"):
-    # checkbox di conferma
-    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati"):
-        st.warning("☝️ Spunta la casella per abilitare il pulsante di cancellazione.")
-    else:
-        with st.spinner("Eliminazione dati in corso…"):
-            from db import clear_market_data
-            clear_market_data()
-        st.success("✅ Tabella `market_data` svuotata con successo!")
-# 🗑️ Sezione opzionale: Svuota completamente il database
-st.markdown("---")
-st.header("🗑️ Pulizia completa del database")
-
-st.markdown(
-    """
-    **Attenzione**: questa operazione **elimina TUTTI** i dati storici
-    in `public.market_data`.  
-    ⁃ È irreversibile!  
-    ⁃ Usare solo se vuoi ripartire da zero.
-    """
-)
-if st.button("🗑️ Svuota market_data"):
-    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati"):
-        st.warning("☝️ Spunta la casella per confermare la cancellazione.")
-    else:
-        with st.spinner("Eliminazione dati in corso…"):
-            from db import clear_market_data
-            clear_market_data()
-        st.success("✅ Tabella `market_data` svuotata con successo!")
-        st.experimental_rerun()  # ← qui: ricarica tutta l’app per aggiornare il Data Quality Report
-
-# ─── Sezione 3: Data Quality Report ───────────────────────────────────────────
+# ─── Sezione 4: Data Quality Report ───────────────────────────────────────────
 st.header("📊 Data Quality Report")
 try:
     quality_df = get_quality_report()
     st.markdown(
-        "Tabella della qualità dei dati storici per ciascun asset:\n"
-        "- `completezza` = % di giorni rilevati vs giorni attesi\n"
-        "- `missing_days` = giorni mancanti nel range\n"
-        "- `score` = Alta / Media / Bassa\n"
+        "- `completezza` = % di giorni rilevati vs giorni attesi  \n"
+        "- `missing_days` = giorni mancanti nel range  \n"
+        "- `score` = Alta / Media / Bassa"
     )
     st.dataframe(
         quality_df.sort_values(by="completezza", ascending=False),
