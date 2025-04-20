@@ -5,6 +5,13 @@ from db import save_ohlcv
 
 st.set_page_config(page_title="Crypto Fetcher", layout="centered")
 st.title("🚀 Crypto Data Fetcher")
+from init_db import create_table
+
+if st.button("🛠 Crea tabella DB"):
+    with st.spinner("Creazione tabella nel database..."):
+        create_table()
+        st.success("✅ Tabella 'market_data' creata nel database!")
+
 
 symbol = st.text_input("Inserisci il simbolo della coin (es. pepe, doge, wif)", value="pepe")
 days = st.slider("Quanti giorni di storico vuoi scaricare?", min_value=1, max_value=90, value=30)
