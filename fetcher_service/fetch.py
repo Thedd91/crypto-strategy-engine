@@ -34,7 +34,7 @@ def fetch_ohlcv(symbol: str, days: int = 30):
             return None
 
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-        params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
+        params = {"vs_currency": "usd", "days": days, "interval": "daily"}
         response = requests.get(url, params=params)
         data = response.json()
 
