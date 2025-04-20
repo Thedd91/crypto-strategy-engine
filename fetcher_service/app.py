@@ -72,6 +72,23 @@ if st.button("🔁 Esegui Backfill Storico"):
         else:
             st.error(f"❌ Backfill completato ma mancano dati per: {', '.join(missing)}")
 
+# 🗑️ Sezione opzionale: svuota la tabella market_data (cancella TUTTI i dati)
+import streamlit as st
+from db import clear_market_data
+
+st.markdown("---")
+st.subheader("🗑️ Pulizia Database")
+
+if st.button("🗑️ Svuota Tabella market_data"):
+    # richiedi conferma esplicita
+    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati in market_data"):
+        st.warning("☝️ Spunta la casella per confermare la cancellazione.")
+    else:
+        with st.spinner("Eliminazione dati in corso…"):
+            clear_market_data()
+        st.success("✅ Tabella market_data svuotata correttamente!")
+
+
 # 📊 Sezione di analisi della qualità dei dati storici per ciascun asset
 # - Calcola completezza, range di date, giorni mancanti e score qualitativo
 # - Mostra tabella interattiva filtrabile per score o completezza
