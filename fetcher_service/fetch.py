@@ -10,9 +10,17 @@ def get_coin_id(name: str):
         coin_list_url = "https://api.coingecko.com/api/v3/coins/list"
         response = requests.get(coin_list_url)
         coins = response.json()
+
+        # Cerca per symbol esatto
+        matches = [coin for coin in coins if coin['symbol'] == name.lower()]
+        if matches:
+            return matches[0]['id']
+
+        # Altrimenti prova con id diretto
         for coin in coins:
-            if coin['id'] == name.lower() or coin['symbol'] == name.lower():
+            if coin['id'] == name.lower():
                 return coin['id']
+
         print("❌ Coin non trovata nella lista CoinGecko")
         return None
     except Exception as e:
