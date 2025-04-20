@@ -119,3 +119,66 @@ try:
 
 except Exception as e:
     st.error(f"❌ Errore nel calcolo della qualità dei dati: {e}")
+
+
+# 📂 Sezione “Bulk CSV Upload” — carica multiple storiche direttamente da PC
+# – Permette di selezionare uno o più file CSV
+# – Per ogni file:
+#     • Estrae il symbol dal nome (es. btc.csv → btc)
+#     • Legge il CSV, rinomina le colonne “snapped_at” → “timestamp”, “price” → “close”, “total_volume” → “volume”
+#     • Imposta open=high=low=close, poi chiama save_ohlcv()
+# – Mostra spinner e log di avanzamento, e un riepilogo finale
+
+st.markdown("---")
+st.subheader("📥 Bulk CSV Upload")
+
+uploaded_files = st.file_uploader(
+    "Seleziona uno o più CSV storici",
+    type="csv",
+    accept_multiple_files=True
+)
+
+if uploaded_files:
+    if st.button("🚀 Carica nel DB"):
+        import pandas as pd
+        from db import save_ohlcv
+
+        errors = []
+        results = []
+        with st.spinner("Import in corso…"):
+            for up in uploaded_files:
+                name = up.name.lower()
+                symbol = name.split(".")[0]
+                try:
+                    df = pd.read_csv(up, parse_dates=["snapped_at"])
+                except Exception as e:
+                    errors.append(f"{name}: errore lettura CSV ({e})")
+                    continue
+
+                # Mappatura colonne CSV → schema market_data
+                df = df.rename(columns={
+                    "snapped_at": "timestamp",
+                    "price":      "close",
+                    "total_volume":"volume"
+                })
+
+                # open/high/low = close
+                df["open"]  = df["close"]
+                df["high"]  = df["close"]
+                df["low"]   = df["close"]
+
+                df = df.set_index("timestamp")
+                df = df[["open","high","low","close","volume"]]
+
+                try:
+                    save_ohlcv(df, symbol)
+                    results.append(f"{symbol}: {len(df)} righe importate")
+                except Exception as e:
+                    errors.append(f"{symbol}: errore salvataggio DB ({e})")
+
+        # Mostra riepilogo
+        st.success("📑 Import completato")
+        for r in results:
+            st.write("✅", r)
+        for err in errors:
+            st.error(err)
