@@ -1,8 +1,8 @@
 # fetcher_service/app.py
 
+import os
 import streamlit as st
 import pandas as pd
-import os
 
 from fetch import fetch_ohlcv
 from db import save_ohlcv, clear_market_data
@@ -11,9 +11,9 @@ from data_quality import get_quality_report
 # ─── Configurazione pagina ────────────────────────────────────────────────────
 st.set_page_config(page_title="Crypto Strategy Engine", layout="wide")
 
-# Debug: mostra l'URL del database in uso
+# Mostra l'URL del database
 db_url = os.getenv("DATABASE_URL")
-st.write("🔍 **URL DB in uso:**", db_url)
+st.markdown(f"🔍 **URL DB in uso:** `{db_url}`")
 
 st.title("🚀 Crypto Strategy Engine")
 st.markdown("Applicazione SaaS per importare e validare storici crypto")
@@ -32,7 +32,6 @@ if st.button("📊 Recupera e salva"):
                 st.success(f"✅ {len(df)} righe salvate per {symbol}!")
             else:
                 st.error("❌ Nessun dato trovato o errore API.")
-
 st.markdown("---")
 
 # ─── Sezione 2: Pulizia completa del database ─────────────────────────────────
@@ -53,7 +52,6 @@ if st.button("🗑️ Svuota market_data"):
             clear_market_data()
         st.success("✅ Tabella `market_data` svuotata con successo!")
         st.experimental_rerun()
-
 st.markdown("---")
 
 # ─── Sezione 3: Bulk CSV Upload ────────────────────────────────────────────────
@@ -75,26 +73,28 @@ uploaded_files = st.file_uploader(
 if uploaded_files:
     if st.button("🚀 Carica nel DB"):
         errors, results = [], []
+        total = len(uploaded_files)
+        progress = st.progress(0)
         with st.spinner("⏳ Importazione in corso…"):
-            for up in uploaded_files:
+            for idx, up in enumerate(uploaded_files, start=1):
                 name = up.name.lower()
                 symbol = name.split(".")[0]
-                st.write(f"📄 Processo file: `{name}` → simbolo `{symbol}`")
+                st.write(f"📄 Processo file `{name}` → simbolo `{symbol}`")
                 try:
-                    df = pd.read_csv(up, parse_dates=["snapped_at"])
+                    df = pd.read_csv(up, parse_dates=["snapped_at"], engine="python")
                 except Exception as e:
                     errors.append(f"{name}: errore lettura CSV ({e})")
                     continue
 
                 df = df.rename(columns={
                     "snapped_at": "timestamp",
-                    "price": "close",
+                    "price":      "close",
                     "total_volume": "volume"
                 })
                 df["open"] = df["close"]
                 df["high"] = df["close"]
                 df["low"]  = df["close"]
-                df = df.set_index("timestamp")[["open", "high", "low", "close", "volume"]]
+                df = df.set_index("timestamp")[["open","high","low","close","volume"]]
 
                 try:
                     save_ohlcv(df, symbol)
@@ -102,12 +102,13 @@ if uploaded_files:
                 except Exception as e:
                     errors.append(f"{symbol}: errore salvataggio DB ({e})")
 
+                progress.progress(int(idx / total * 100))
+
         st.success("📑 Import completato")
         for r in results:
             st.write("✅", r)
         for err in errors:
             st.error(err)
-
 st.markdown("---")
 
 # ─── Sezione 4: Data Quality Report ───────────────────────────────────────────
@@ -119,11 +120,13 @@ try:
         "- `missing_days` = giorni mancanti nel range  \n"
         "- `score` = Alta / Media / Bassa"
     )
+    # Mostra tutte le righe con altezza dinamica
     st.dataframe(
-        quality_df.sort_values(by="completezza", ascending=False).reset_index(drop=True),
+        quality_df
+        .sort_values(by="completezza", ascending=False)
+        .reset_index(drop=True),
         use_container_width=True,
-        height=min(1000, 50 + 35 * len(quality_df))  # auto-adatta l'altezza alla quantità di coin
-
+        height=min(1000, 50 + 35 * len(quality_df))
     )
 
     st.markdown("### 📈 Profondità storica (anni) per coin")
