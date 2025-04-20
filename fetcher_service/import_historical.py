@@ -1,5 +1,5 @@
 # import_historical.py  
-
+print("🔔 import_historical.py avviato.")
 import pandas as pd
 import os
 from db import save_ohlcv, clear_market_data
