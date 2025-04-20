@@ -120,8 +120,11 @@ try:
         "- `score` = Alta / Media / Bassa"
     )
     st.dataframe(
-        quality_df.sort_values(by="completezza", ascending=False),
-        use_container_width=True
+        quality_df.sort_values(by="completezza", ascending=False).reset_index(drop=True),
+        use_container_width=True,
+        height=min(1000, 50 + 35 * len(quality_df))  # auto-adatta l'altezza alla quantità di coin
+    )
+
     )
 
     st.markdown("### 📈 Profondità storica (anni) per coin")
