@@ -10,7 +10,7 @@ def save_ohlcv(df: pd.DataFrame, symbol: str):
     cursor = conn.cursor()
     for ts, row in df.iterrows():
         cursor.execute("""
-            INSERT INTO market_data (timestamp, symbol, interval, open, high, low, close, volume)
+            INSERT INTO public.market_data (timestamp, symbol, interval, open, high, low, close, volume)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT DO NOTHING;
         """, (ts, symbol, '1h', row['open'], row['high'], row['low'], row['close'], row['volume']))
