@@ -80,6 +80,29 @@ if uploaded_files:
 
 st.markdown("---")
 
+# 🗑️ Sezione opzionale: Svuota completamente il database
+st.markdown("---")
+st.header("🗑️ Pulizia completa del database")
+
+st.markdown(
+    """
+    **Attenzione**: questa operazione **elimina TUTTI** i dati storici
+    in `public.market_data`.  
+    ⁃ È irreversibile!  
+    ⁃ Usare solo se vuoi ripartire da zero.
+    """
+)
+if st.button("🗑️ Svuota market_data"):
+    # checkbox di conferma
+    if not st.checkbox("✅ Confermo di voler cancellare TUTTI i dati"):
+        st.warning("☝️ Spunta la casella per abilitare il pulsante di cancellazione.")
+    else:
+        with st.spinner("Eliminazione dati in corso…"):
+            from db import clear_market_data
+            clear_market_data()
+        st.success("✅ Tabella `market_data` svuotata con successo!")
+
+
 # ─── Sezione 3: Data Quality Report ───────────────────────────────────────────
 st.header("📊 Data Quality Report")
 try:
