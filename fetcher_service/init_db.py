@@ -7,7 +7,7 @@ def create_table():
         conn = psycopg2.connect(get_db_url())
         cursor = conn.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS market_data (
+            CREATE TABLE IF NOT EXISTS public.market_data (
                 id SERIAL PRIMARY KEY,
                 timestamp TIMESTAMPTZ NOT NULL,
                 symbol TEXT NOT NULL,
