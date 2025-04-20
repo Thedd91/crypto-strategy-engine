@@ -37,3 +37,16 @@ def save_ohlcv(df, symbol: str):
         conn.close()
     except Exception as e:
         raise e
+
+
+def clear_market_data():
+    """
+    Elimina **tutti** i record** dalla tabella public.market_data.
+    Usare con estrema cautela!
+    """
+    conn = psycopg2.connect(get_db_url())
+    cur = conn.cursor()
+    cur.execute("TRUNCATE TABLE public.market_data;")
+    conn.commit()
+    cur.close()
+    conn.close()
