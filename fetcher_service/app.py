@@ -6,7 +6,7 @@ from fetch import fetch_ohlcv
 from db import save_ohlcv
 from data_quality import get_quality_report
 import os
-st.write("🔍 URL DB in uso:", os.getenv("DATABASE_URL"))
+print("🔍 URL DB in uso:", os.getenv("DATABASE_URL"))
 st.set_page_config(page_title="Crypto Strategy Engine", layout="wide")
 
 st.title("🚀 Crypto Strategy Engine")
