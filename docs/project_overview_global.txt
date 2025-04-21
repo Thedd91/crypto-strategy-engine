@@ -1,1 +1,125 @@
 
+# 🧠 Crypto Strategy Engine — Progetto Completo
+
+**Piattaforma modulare e automatizzata per analisi storiche, strategia, intelligenza adattiva e automazione trading crypto.**
+
+---
+
+## 🎯 Obiettivo
+
+Costruire un motore modulare per:
+- Analizzare il comportamento storico di coin e memecoin
+- Costruire strategie automatizzate basate su dati e pattern
+- Utilizzare agenti intelligenti per adattarsi a dinamiche di mercato
+- Automatizzare fetch, backtest e suggerimenti di azione
+- Fornire una dashboard interattiva per monitoraggio e decisioni operative
+
+---
+
+## 🧱 Architettura Modulare
+
+- **Frontend**: Streamlit App
+- **Backend**: Servizi modulari Python
+    - `fetcher_service`: raccolta e salvataggio dati
+    - `strategy_service`: esecuzione e valutazione strategie
+    - `agent_service` (futuro): agenti che propongono azioni strategiche
+- **Database**: PostgreSQL (Neon.tech)
+- **Automazione**: GitHub Actions (schedulazione, aggiornamenti)
+- **Storage CSV**: `historical_csv/` (caricamento manuale iniziale)
+- **Model Registry** (futuro): salvataggio strategie e performance
+- **Orchestratore/Planner** (futuro): gestisce priorità, scansione asset, trigger
+
+---
+
+## 📁 Struttura del Progetto
+
+- `/fetcher_service`
+  - `app.py`: Streamlit UI
+  - `fetch.py`: scarica OHLCV da CoinGecko
+  - `fill_missing.py`: aggiorna delta giornaliero
+  - `import_historical.py`: carica CSV manuali
+  - `backfill.py`: bulk storico iniziale per coin
+  - `data_quality.py`: calcolo qualità dati
+  - `db.py`: connettore PostgreSQL
+- `/strategy_service` (in costruzione)
+  - `strategies/`: cartella strategie (RSI, breakout, momentum…)
+  - `backtester.py`: motore backtest multipla strategia
+  - `optimizer.py`: tuning automatico parametri
+- `/agent_service` (futuro)
+  - `agent.py`: comportamento e apprendimento automatico
+  - `signal_generator.py`: segnali attivi da pattern
+- `/docs/`
+  - `project_overview.txt`: documento completo di riferimento
+
+---
+
+## 🗃️ Classificazione delle Coin
+
+- **Tier 1 (10 anni)**: BTC, ETH, BNB, XRP, LTC
+- **Tier 2 (5 anni)**: ADA, SOL, DOT, AVAX, MATIC, LINK, ATOM
+- **Tier 3 (2 anni)**: DOGE, SHIB, PEPE, WIF, BONK, FLOKI
+
+---
+
+## 🔁 Automazione
+
+- **GitHub Actions**: aggiorna giornalmente (`fill_missing.py`)
+- **Streamlit App**:
+  - Import CSV e visualizzazione data quality
+  - Pulsante per svuotare il DB
+  - Stato ultimo aggiornamento
+- **In arrivo**:
+  - Scheduler strategie
+  - Backtest continuo e reporting
+  - Notifiche o raccomandazioni
+
+---
+
+## 🧪 Strategie (attuali e future)
+
+- ✅ RSI Rebound
+- ✅ Breakout Optimizer
+- ✅ Buy & Hold Benchmark
+- 🔄 Moving Average Crossover
+- 🔜 Momentum + Volume Surge
+- 🔜 Strategie multi‑coin
+- 🔜 Ensemble e meta‑strategy (strategie sulle strategie)
+
+---
+
+## ✅ Stato Attuale
+
+- [x] Raccolta dati funzionante
+- [x] Caricamento manuale CSV
+- [x] Controllo qualità completo
+- [x] Interfaccia Streamlit attiva
+- [x] Automazione giornaliera via GitHub Actions
+- [ ] Strategie integrate con DB storico
+- [ ] Storage risultati & dashboard performance
+- [ ] Agenti intelligenti in sviluppo
+
+---
+
+## 📌 Prompt per ChatGPT (riprendere il progetto)
+
+```
+Questo è il progetto completo Crypto Strategy Engine, con moduli per fetch, strategie, agenti e automazione. I file principali includono: fetch.py, app.py, fill_missing.py, db.py, backtester.py, optimizer.py. Riprendi da qui.
+```
+
+
+---
+
+## 📓 Dettagli metodologici
+
+- Le coin sono classificate per "Tier" sulla base della profondità utile allo studio dei pattern (macro-cicli per Tier 1, rotazioni per Tier 2, volatilità iper-speculativa per Tier 3).
+- Ogni coin può contribuire con pattern validi anche per altri gruppi (es: memecoin triggerano bull run).
+- Il modello è pensato per separare:
+  - **Dati** (raw + qualità)
+  - **Strategie** (logica e performance)
+  - **Agenti** (decision making dinamico)
+- I backtest saranno eseguiti su dati reali storici, usando rolling windows e segnali interpretativi.
+- In futuro, verranno memorizzate le performance e i parametri ottimali di ogni strategia in un registry per confronti tra scenari e versioni.
+
+---
+
+## ✍️ Autore: Edoar (utente), assistito da ChatGPT
