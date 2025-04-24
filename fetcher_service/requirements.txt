@@ -2,3 +2,8 @@ pandas
 requests
 psycopg2-binary
 python-dotenv
+streamlit
+sqlalchemy
+ta
+matplotlib
+yfinance
