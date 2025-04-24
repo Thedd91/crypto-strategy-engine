@@ -4,6 +4,7 @@ auto_update.py
 
 Aggiorna ogni giorno i dati OHLCV delle crypto presenti nel DB,
 riempiendo automaticamente eventuali gap dal database fino ad oggi.
+Salva anche il timestamp dell'ultimo aggiornamento nel DB.
 """
 
 import logging
@@ -20,7 +21,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-
 def get_coin_list_from_db(session):
     """
     Restituisce una lista unica di coin_id presenti nella tabella OHLCV
@@ -28,6 +28,24 @@ def get_coin_list_from_db(session):
     result = session.execute(text("SELECT DISTINCT coin_id FROM ohlcv"))
     return [row[0] for row in result.fetchall()]
 
+def update_last_updated(session):
+    """
+    Salva nel DB il timestamp dell'ultimo aggiornamento
+    """
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    session.execute(
+        text("""
+            CREATE TABLE IF NOT EXISTS meta (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )
+        """)
+    )
+    session.execute(
+        text("INSERT INTO meta (key, value) VALUES (:k, :v) ON CONFLICT (key) DO UPDATE SET value = :v"),
+        {"k": "last_updated", "v": now_str}
+    )
+    session.commit()
 
 def main():
     logging.info("Avvio aggiornamento dati crypto dal DB")
@@ -44,9 +62,9 @@ def main():
         except Exception as e:
             logging.error(f"Errore aggiornando {coin_id}: {e}", exc_info=True)
 
+    update_last_updated(session)
     session.close()
     logging.info("Aggiornamento giornaliero completato")
-
 
 if __name__ == "__main__":
     main()
