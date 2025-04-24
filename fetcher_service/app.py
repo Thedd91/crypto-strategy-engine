@@ -138,3 +138,14 @@ try:
     )
 except Exception as e:
     st.error(f"❌ Errore nel calcolo della qualità dei dati: {e}")
+
+from db import get_db_session
+from sqlalchemy import text
+
+session = get_db_session()
+res = session.execute(text("SELECT value FROM meta WHERE key = 'last_updated'")).fetchone()
+last_update = res[0] if res else "Mai eseguito"
+session.close()
+
+st.sidebar.markdown(f"🕒 **Last DB update:** `{last_update}`")
+
