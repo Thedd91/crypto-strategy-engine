@@ -139,9 +139,10 @@ try:
 except Exception as e:
     st.error(f"❌ Errore nel calcolo della qualità dei dati: {e}")
 
-from db import get_db_session
 from sqlalchemy import text
+from fetcher_service.db import get_db_session
 
+# Sezione: Ultimo aggiornamento dal DB
 session = get_db_session()
 res = session.execute(text("SELECT value FROM meta WHERE key = 'last_updated'")).fetchone()
 last_update = res[0] if res else "Mai eseguito"
@@ -149,3 +150,7 @@ session.close()
 
 st.sidebar.markdown(f"🕒 **Last DB update:** `{last_update}`")
 
+# Sezione: Pulsante aggiornamento manuale (placeholder)
+with st.sidebar.expander("⚙️ Tools"):
+    if st.button("🔄 Aggiorna ora il database"):
+        st.warning("⚠️ Funzione non attiva: esegui `auto_update.py` o attendi GitHub Action notturna.")
