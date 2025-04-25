@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 import datetime
 
 # Load secrets
-SUPABASE_CONN = st.secrets["SUPABASE_CONN"]
+SUPABASE_CONN = st.secrets["DATABASE_URL"]
 DUNE_API_KEY = st.secrets["DUNE_API_KEY"]
 
 engine = create_engine(SUPABASE_CONN)
