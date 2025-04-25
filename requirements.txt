@@ -1,8 +1,8 @@
+streamlit>=1.18
 pandas
 requests
 psycopg2-binary
 python-dotenv
-streamlit
 sqlalchemy
 ta
 matplotlib
