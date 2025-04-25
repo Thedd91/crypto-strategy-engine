@@ -2,12 +2,13 @@ import streamlit as st
 
 st.set_page_config(page_title="Crypto Strategy Engine", layout="wide")
 
-st.title("🚀 Crypto Strategy Engine")
+# Home page
+st.title("🏠 Home")
 st.markdown("Benvenuto! Scegli una sezione per iniziare:")
 
 st.divider()
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("🧮 Data Management")
@@ -20,6 +21,12 @@ with col2:
     st.markdown("Sperimenta strategie di trading basate su dati reali.")
     if st.button("🚀 Vai a Strategie"):
         st.switch_page("pages/2_Strategie.py")
+
+with col3:
+    st.subheader("🔧 Data Console")
+    st.markdown("Configura e monitora le fonti dati esterne.")
+    if st.button("🖥️ Vai a Data Console"):
+        st.switch_page("pages/3_Data_Console.py")
 
 st.divider()
 st.markdown("🧠 Powered by CoinGecko API · PostgreSQL · Streamlit · Python")
