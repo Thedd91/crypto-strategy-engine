@@ -4,44 +4,39 @@ import streamlit as st
 import sys
 from pathlib import Path
 from graphviz import Digraph
+import pandas as pd
+from sqlalchemy import create_engine
 
 # Extend path to include services
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import fetchers
-from data_services.onchain_service.flow import run_onchain_fetcher
 from data_services.macro_service.macro_fetcher import run_macro_fetcher
-from data_services.onchain_service.dune_fetcher import run_dune_fetcher
+from data_services.onchain_service.onchain_fetcher import run_onchain_fetcher
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="Data Console", layout="wide")
 st.title("🛠️ Data Console")
-st.markdown("Gestisci i micro-servizi di raccolta dati alternativi.")
+st.markdown("Controlla e gestisci i microservizi di raccolta dati alternativi.")
 
 st.divider()
 
 # --- SERVICE CONTROL PANEL ---
 st.header("🔧 Controllo Servizi Dati")
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("💾 Onchain Service (Flow)")
-    if st.button("📡 Run Onchain Fetcher"):
-        with st.spinner("Fetching Onchain Data..."):
-            run_onchain_fetcher()
-
-with col2:
-    st.subheader("🌐 Macro Service (Fear & Greed)")
+    st.subheader("🌐 Macro Service (Fear & Greed Index)")
     if st.button("🌐 Run Macro Fetcher"):
         with st.spinner("Fetching Macro Data..."):
             run_macro_fetcher()
 
-with col3:
-    st.subheader("🔷 Dune Analytics Fetcher")
-    if st.button("📡 Run Dune Fetcher"):
-        with st.spinner("Executing Dune Query..."):
-            run_dune_fetcher()
+with col2:
+    st.subheader("📡 Onchain Service (Active Addresses - Echo API)")
+    if st.button("📡 Run Onchain Fetcher"):
+        with st.spinner("Fetching Active Addresses from Echo API..."):
+            run_onchain_fetcher()
 
 st.divider()
 
@@ -52,10 +47,9 @@ dot = Digraph("CryptoStrategyEngine", format="png")
 dot.attr(rankdir="LR", size="10")
 
 # Services
-dot.node("A", "OHLCV Price Data\n(fetcher_service)")
-dot.node("B", "Onchain Flow\n(onchain_service)")
-dot.node("C", "Macro Sentiment\n(macro_service)")
-dot.node("D", "Dune Queries\n(onchain_service)")
+dot.node("OHLCV", "OHLCV Price Data\n(fetcher_service)")
+dot.node("Macro", "Macro Sentiment\n(macro_service)")
+dot.node("OnChain", "Onchain Active Addresses\n(onchain_service)")
 
 # Central Database
 dot.node("DB", "Supabase\n(metric_raw, price_ohlcv)")
@@ -65,15 +59,28 @@ dot.node("FL", "Feature Lab")
 dot.node("STRAT", "Strategies & Agent")
 
 # Links
-dot.edge("A", "DB")
-dot.edge("B", "DB")
-dot.edge("C", "DB")
-dot.edge("D", "DB")
+dot.edge("OHLCV", "DB")
+dot.edge("Macro", "DB")
+dot.edge("OnChain", "DB")
 dot.edge("DB", "FL")
 dot.edge("FL", "STRAT")
 
-# Draw the graph
 st.graphviz_chart(dot)
 
 st.divider()
-st.markdown("🔵 Powered by Supabase · Streamlit · Python · Dune · Crypto APIs")
+
+# --- METRIC RAW PREVIEW ---
+st.header("🔍 Anteprima Tabella metric_raw")
+
+# Load connection
+SUPABASE_CONN = st.secrets["SUPABASE_CONN"]
+engine = create_engine(SUPABASE_CONN)
+
+try:
+    df = pd.read_sql("SELECT * FROM metric_raw ORDER BY ts DESC LIMIT 50", con=engine)
+    st.dataframe(df)
+except Exception as e:
+    st.error(f"❌ Error loading metric_raw preview: {e}")
+
+st.divider()
+st.markdown("🔵 Powered by Supabase · Streamlit · Python · Dune Echo API")
