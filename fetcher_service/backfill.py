@@ -1,7 +1,7 @@
 # backfill.py — Script per costruire lo storico delle coin in base al Tier (eseguibile anche da Streamlit o CLI)
 import pandas as pd
-from fetch import fetch_ohlcv
-from db import save_ohlcv
+from fetcher_service.fetch import fetch_ohlcv
+from fetcher_service.db import save_ohlcv
 from config import get_db_url
 from datetime import datetime
 import os
