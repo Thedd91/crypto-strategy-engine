@@ -3,47 +3,36 @@
 import streamlit as st
 import requests
 import pandas as pd
-from sqlalchemy import create_engine
 import datetime
+from data_services.utils.supabase_client import insert_into_metric_raw
 
-# Load secrets
-SUPABASE_CONN = st.secrets["DATABASE_URL"]
+# Dune Echo API settings
+DUNE_API_URL = "https://api.dune.com/echo/v1"
 DUNE_API_KEY = st.secrets["DUNE_API_KEY"]
 
-engine = create_engine(SUPABASE_CONN)
-
-# Dune Echo API endpoint
-ECHO_API_BASE = "https://api.dune.com/echo/v1"
-
-# Headers for Dune Echo
 HEADERS = {
     "x-dune-api-key": DUNE_API_KEY
 }
 
-# Chains che vogliamo monitorare
+# Chains to monitor
 CHAINS = {
     "ethereum": "ethereum",
     "bsc": "bsc",
     "avalanche_c": "avalanche_c"
 }
 
-# Indirizzi noti di exchange da filtrare fuori (opzionale)
-# EXCHANGE_ADDRESSES = ["0x...", "0x..."]  # Se vuoi evitare indirizzi CEX
-
 def fetch_active_addresses(chain: str) -> int:
     """
     Fetch active addresses count for a specific chain from Dune Echo.
     """
     try:
-        # Endpoint delle transazioni
-        url = f"{ECHO_API_BASE}/transactions/{chain}"
-        
-        # Chiediamo solo l'ultimo giorno
+        url = f"{DUNE_API_URL}/transactions/{chain}"
+
         today = datetime.datetime.utcnow().isoformat() + "Z"
 
         params = {
-            "after": today,  # o puoi non mettere after per tutto
-            "limit": 10000  # massimo batch
+            "after": today,
+            "limit": 10000  # Max batch size
         }
 
         response = requests.get(url, headers=HEADERS, params=params)
@@ -68,24 +57,9 @@ def fetch_active_addresses(chain: str) -> int:
         st.error(f"❌ Error fetching active addresses on {chain}: {e}")
         return 0
 
-def save_to_db(df: pd.DataFrame):
-    """
-    Save a DataFrame into metric_raw table.
-    """
-    if df.empty:
-        st.warning("⚠️ No data to save.")
-        return
-
-    try:
-        with engine.begin() as conn:
-            df.to_sql("metric_raw", con=conn, if_exists="append", index=False, method="multi")
-        st.success(f"✅ Saved {len(df)} rows to metric_raw.")
-    except Exception as e:
-        st.error(f"❌ Error saving to database: {e}")
-
 def run_onchain_fetcher():
     """
-    Run active addresses fetch across all chains and save results.
+    Run the active addresses fetch across all chains and insert results into Supabase.
     """
     st.info("🚀 Fetching Active Addresses from Dune Echo API...")
 
@@ -108,9 +82,7 @@ def run_onchain_fetcher():
 
     if records:
         df = pd.DataFrame(records)
-        save_to_db(df)
+        insert_into_metric_raw(df)
     else:
         st.warning("⚠️ No active addresses data collected.")
 
-if __name__ == "__main__":
-    run_onchain_fetcher()
