@@ -40,15 +40,38 @@ if st.button("📊 Recupera e salva"):
             else:
                 st.error("❌ Nessun dato trovato o errore API.")
 
-# Pulizia DB
-st.header("🗑️ Pulizia database")
-if st.button("🧹 Svuota market_data"):
-    if not st.checkbox("✅ Confermo di voler cancellare tutti i dati"):
-        st.warning("☝️ Devi confermare la cancellazione.")
-    else:
-        with st.spinner("Eliminazione in corso..."):
-            clear_market_data()
-        st.success("✅ Tabella market_data svuotata!")
+# Sezione: Pulizia selettiva del database
+st.header("🧹 Elimina dati di coin specifiche")
+
+# Ottieni le coin presenti nel DB
+try:
+    session = get_db_session()
+    rows = session.execute(text("SELECT DISTINCT symbol FROM market_data ORDER BY symbol")).fetchall()
+    session.close()
+    symbols = [r[0] for r in rows]
+except Exception as e:
+    st.error(f"Errore nel recupero delle coin: {e}")
+    symbols = []
+
+# Selezione delle coin
+selected = st.multiselect("Seleziona le coin da eliminare", options=symbols)
+
+# Conferma utente (checkbox)
+if selected:
+    confirm = st.checkbox("✅ Confermo di voler eliminare le coin selezionate")
+
+    if confirm:
+        if st.button("🚮 Elimina selezionate"):
+            try:
+                session = get_db_session()
+                for s in selected:
+                    session.execute(text("DELETE FROM market_data WHERE symbol = :s"), {"s": s})
+                session.commit()
+                session.close()
+                st.success(f"✅ Dati eliminati per: {', '.join(selected)}")
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Errore durante l'eliminazione: {e}")
 
 # Upload CSV
 st.header("📂 Upload CSV storici")
