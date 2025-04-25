@@ -2,7 +2,7 @@
 print("🔔 import_historical.py avviato.")
 import pandas as pd
 import os
-from db import save_ohlcv, clear_market_data
+from fetcher_service.db import save_ohlcv, clear_market_data
 
 CSV_DIR = "historical_csv"
 
