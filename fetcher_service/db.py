@@ -38,6 +38,20 @@ def clear_market_data():
     conn = psycopg2.connect(get_db_url())
     cur = conn.cursor()
     cur.execute("TRUNCATE TABLE public.market_data;")
+
+def get_db_session():
+    """
+    Crea e ritorna una sessione SQLAlchemy da utilizzare con text() o ORM (opzionale).
+    """
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from config import get_db_url
+
+    engine = create_engine(get_db_url())
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+    
     conn.commit()
     cur.close()
     conn.close()
