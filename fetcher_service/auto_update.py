@@ -10,8 +10,8 @@ Salva anche il timestamp dell'ultimo aggiornamento nel DB.
 import logging
 from datetime import datetime, timezone
 
-from db import get_db_session
-from fill_missing import fill_missing_for_coin
+from fetcher_service.db import get_db_session
+from fetcher_service.fill_missing import fill_missing_for_coin
 from sqlalchemy import text
 
 # Setup log
