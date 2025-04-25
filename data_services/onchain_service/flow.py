@@ -1,16 +1,14 @@
 # file: data_services/onchain_service/flow.py
 
-import os
+import streamlit as st
 import requests
 import pandas as pd
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
 
-# Load environment
-load_dotenv()
+# Load secrets from Streamlit
+SUPABASE_CONN = st.secrets["SUPABASE_CONN"]
+GLASSNODE_KEY = st.secrets.get("GLASSNODE_KEY")
 
-SUPABASE_CONN = os.getenv("SUPABASE_CONN")
-GLASSNODE_KEY = os.getenv("GLASSNODE_KEY")
 assert SUPABASE_CONN, "Missing SUPABASE_CONN"
 assert GLASSNODE_KEY, "Missing GLASSNODE_KEY"
 
@@ -45,27 +43,28 @@ def fetch_metric(metric: str, asset: str) -> pd.DataFrame:
         df["meta"] = "{}"
         return df[["ts", "asset", "metric", "value", "src", "meta"]]
     except Exception as e:
-        print(f"[❌] Error fetching {metric} for {asset}: {e}")
+        st.error(f"❌ Error fetching {metric} for {asset}: {e}")
         return pd.DataFrame()
 
 def save_to_db(df: pd.DataFrame):
-    """Insert the DataFrame into the metric_raw table."""
+    """Save the dataframe into metric_raw table."""
     if df.empty:
-        print("[⚠️] No data to save.")
+        st.warning("⚠️ No data to save.")
         return
     try:
         with engine.begin() as conn:
             df.to_sql("metric_raw", con=conn, if_exists="append", index=False, method="multi")
-        print(f"[✅] Saved {len(df)} rows to metric_raw.")
+        st.success(f"✅ Saved {len(df)} rows to metric_raw.")
     except Exception as e:
-        print(f"[❌] Error saving to DB: {e}")
+        st.error(f"❌ Error saving to database: {e}")
 
-def run_all():
+def run_onchain_fetcher():
+    """Run all on-chain metrics fetching and save to database."""
     for metric in METRICS:
         for asset in ASSETS:
-            print(f"[⏳] Fetching {metric} for {asset}...")
+            st.info(f"📡 Fetching {metric} for {asset}...")
             df = fetch_metric(metric, asset)
             save_to_db(df)
 
 if __name__ == "__main__":
-    run_all()
+    run_onchain_fetcher()
