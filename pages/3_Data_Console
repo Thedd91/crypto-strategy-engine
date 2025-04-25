@@ -1,0 +1,46 @@
+# file: pages/3_Data_Console.py
+import streamlit as st
+from graphviz import Digraph
+
+# Mock della pagina "Data Console" collocata in pages/
+
+st.set_page_config(page_title="Data Console", layout="wide")
+st.title("🔧 Data Console")
+
+# --- Sezione API Keys ---
+st.header("API Keys & Configurazioni")
+st.text_input("Glassnode API Key", type="password", key="glassnode_key")
+st.text_input("Coinglass API Key", type="password", key="coinglass_key")
+st.text_input("Santiment API Key", type="password", key="santiment_key")
+
+# --- Sezione Service Status ---
+st.header("Service Status")
+st.write("_Tabella placeholder con last run, row count, next sched._")
+
+# --- Sezione Run On-Demand ---
+st.header("Run On-Demand")
+for svc in ["onchain", "deriv", "social", "dev_activity", "macro", "smart_money"]:
+    if st.button(f"Run {svc} Service", key=f"run_{svc}"):
+        st.write(f"Eseguito fetch per {svc}")
+
+# --- Diagramma Architettura ---
+st.header("Architettura Pipeline Dati")
+
+dot = Digraph("CSE_DataConsole", format="png")
+dot.node("A", "fetcher_service\n(OHLCV)")
+dot.node("B", "onchain_service")
+dot.node("C", "deriv_service")
+dot.node("D", "social_service")
+dot.node("E", "dev_activity_service")
+dot.node("F", "Supabase\n(metric_raw, price_ohlcv)")
+dot.node("G", "feature_lab")
+dot.node("H", "strategy_service")
+dot.node("I", "agent_service")
+
+for n in ["A", "B", "C", "D", "E"]:
+    dot.edge(n, "F")
+dot.edge("F", "G")
+dot.edge("G", "H")
+dot.edge("G", "I")
+
+st.graphviz_chart(dot)
