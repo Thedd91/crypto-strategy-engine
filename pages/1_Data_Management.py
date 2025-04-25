@@ -2,9 +2,6 @@ import os
 import streamlit as st
 import pandas as pd
 from sqlalchemy import text
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from fetcher_service.db import get_db_session
 from fetcher_service.fetch import fetch_ohlcv
