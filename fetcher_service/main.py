@@ -1,8 +1,8 @@
 # fetcher_service/main.py
 # Punto di ingresso per recupero dati da CoinGecko e salvataggio su PostgreSQL
 
-from fetch import fetch_ohlcv
-from db import save_ohlcv
+from fetcher_service.fetch import fetch_ohlcv
+from fetcher_service.db import save_ohlcv
 import sys
 
 if __name__ == "__main__":
