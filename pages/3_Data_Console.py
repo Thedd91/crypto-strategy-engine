@@ -1,45 +1,79 @@
 # file: pages/3_Data_Console.py
+
 import streamlit as st
+import sys
+from pathlib import Path
 from graphviz import Digraph
 
-# Mock della pagina "Data Console" collocata in pages/
+# Extend path to include services
+sys.path.append(str(Path(__file__).parent.parent))
 
-st.title("🔧 Data Console")
+# Import fetchers
+from data_services.onchain_service.flow import run_onchain_fetcher
+from data_services.macro_service.macro_fetcher import run_macro_fetcher
+from data_services.onchain_service.dune_fetcher import run_dune_fetcher
 
-# --- Sezione API Keys ---
-st.header("API Keys & Configurazioni")
-st.text_input("Glassnode API Key", type="password", key="glassnode_key")
-st.text_input("Coinglass API Key", type="password", key="coinglass_key")
-st.text_input("Santiment API Key", type="password", key="santiment_key")
+# --- PAGE CONFIGURATION ---
+st.set_page_config(page_title="Data Console", layout="wide")
+st.title("🛠️ Data Console")
+st.markdown("Gestisci i micro-servizi di raccolta dati alternativi.")
 
-# --- Sezione Service Status ---
-st.header("Service Status")
-st.write("_Tabella placeholder con last run, row count, next sched._")
+st.divider()
 
-# --- Sezione Run On-Demand ---
-st.header("Run On-Demand")
-for svc in ["onchain", "deriv", "social", "dev_activity", "macro", "smart_money"]:
-    if st.button(f"Run {svc} Service", key=f"run_{svc}"):
-        st.write(f"Eseguito fetch per {svc}")
+# --- SERVICE CONTROL PANEL ---
+st.header("🔧 Controllo Servizi Dati")
 
-# --- Diagramma Architettura ---
-st.header("Architettura Pipeline Dati")
+col1, col2, col3 = st.columns(3)
 
-dot = Digraph("CSE_DataConsole", format="png")
-dot.node("A", "fetcher_service\n(OHLCV)")
-dot.node("B", "onchain_service")
-dot.node("C", "deriv_service")
-dot.node("D", "social_service")
-dot.node("E", "dev_activity_service")
-dot.node("F", "Supabase\n(metric_raw, price_ohlcv)")
-dot.node("G", "feature_lab")
-dot.node("H", "strategy_service")
-dot.node("I", "agent_service")
+with col1:
+    st.subheader("💾 Onchain Service (Flow)")
+    if st.button("📡 Run Onchain Fetcher"):
+        with st.spinner("Fetching Onchain Data..."):
+            run_onchain_fetcher()
 
-for n in ["A", "B", "C", "D", "E"]:
-    dot.edge(n, "F")
-dot.edge("F", "G")
-dot.edge("G", "H")
-dot.edge("G", "I")
+with col2:
+    st.subheader("🌐 Macro Service (Fear & Greed)")
+    if st.button("🌐 Run Macro Fetcher"):
+        with st.spinner("Fetching Macro Data..."):
+            run_macro_fetcher()
 
+with col3:
+    st.subheader("🔷 Dune Analytics Fetcher")
+    if st.button("📡 Run Dune Fetcher"):
+        with st.spinner("Executing Dune Query..."):
+            run_dune_fetcher()
+
+st.divider()
+
+# --- ARCHITECTURE MAP ---
+st.header("🗺️ Architettura Dati")
+
+dot = Digraph("CryptoStrategyEngine", format="png")
+dot.attr(rankdir="LR", size="10")
+
+# Services
+dot.node("A", "OHLCV Price Data\n(fetcher_service)")
+dot.node("B", "Onchain Flow\n(onchain_service)")
+dot.node("C", "Macro Sentiment\n(macro_service)")
+dot.node("D", "Dune Queries\n(onchain_service)")
+
+# Central Database
+dot.node("DB", "Supabase\n(metric_raw, price_ohlcv)")
+
+# Feature Lab and Strategies
+dot.node("FL", "Feature Lab")
+dot.node("STRAT", "Strategies & Agent")
+
+# Links
+dot.edge("A", "DB")
+dot.edge("B", "DB")
+dot.edge("C", "DB")
+dot.edge("D", "DB")
+dot.edge("DB", "FL")
+dot.edge("FL", "STRAT")
+
+# Draw the graph
 st.graphviz_chart(dot)
+
+st.divider()
+st.markdown("🔵 Powered by Supabase · Streamlit · Python · Dune · Crypto APIs")
