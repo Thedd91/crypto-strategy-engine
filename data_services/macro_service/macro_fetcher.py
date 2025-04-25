@@ -6,7 +6,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # Load secrets from Streamlit
-SUPABASE_CONN = st.secrets["SUPABASE_CONN"]
+SUPABASE_CONN = st.secrets["DATABASE_URL"]
 
 engine = create_engine(SUPABASE_CONN)
 
