@@ -4,7 +4,6 @@ from graphviz import Digraph
 
 # Mock della pagina "Data Console" collocata in pages/
 
-st.set_page_config(page_title="Data Console", layout="wide")
 st.title("🔧 Data Console")
 
 # --- Sezione API Keys ---
